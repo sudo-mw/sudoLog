@@ -1,3 +1,7 @@
+# List_Comprehension
+# 리스트를 사용해서 리스트를 생성할 때 생성합니다. 
+
+
 def get_basic_comprehension(numbers):
     # 1. 기본 형태 (Basic)
     return [n * 2 for n in numbers]
