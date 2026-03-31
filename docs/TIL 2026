@@ -59,3 +59,5 @@ else:
 - 문제에서 관계가 주어진 경우 -> 그래프 사용. '비교' 그래프인 경우 위상 정렬
 
 - 다익스트라 구현할 때 힙 써야 빠르다.
+
+- 복습. 조합 쓸 때는 `from itertools import combinations`

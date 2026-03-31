@@ -1,56 +1,90 @@
 import sys
 import math
-import heapq
+from collections import deque
+from itertools import combinations
+
+input = sys.stdin.readline
 
 def solution():
-    input = [ int(x) for x in sys.stdin.readline().split() ]
-    village_count = input[0]
-    edge_count = input[1]
-    party_location = input[2] 
+    N, M = map(int, input().split())
 
-    graph = [ [math.inf for _ in range(village_count + 1) ] for _ in range(village_count + 1) ]
-    min_cost = [ [math.inf for _ in range(village_count + 1) ] for _ in range(village_count + 1) ]
+    graph = [list(map(int, input().split())) for _ in range(N)]
+    distance = [[]]
+    house_count = 0
+    chicken_count = 0
+    result = math.inf
     
+    def mark_map():
+        house_num = 1 
+        chicken_num = -1 
+        nonlocal house_count
+        nonlocal chicken_count
 
-    for _ in range(edge_count): 
-        edge_info = [ int(x) for x in sys.stdin.readline().split() ]
-        src = edge_info[0]
-        dest = edge_info[1]
-        weight = edge_info[2]
+        for i in range(N):
+            for j in range(N):
+                if graph[i][j] == 1:
+                    graph[i][j] = house_num
+                    house_num += 1
+                elif graph[i][j] == 2:
+                    graph[i][j] = chicken_num
+                    chicken_num -= 1 
 
-        graph[src][dest] = weight
+        house_num -= 1
+        chicken_num += 1
 
-    def dijkstra(start): 
-        heap = []
+        house_count = house_num 
+        chicken_count = abs(chicken_num)
 
-        costs = [math.inf for _ in range(village_count + 1)]
-        costs[start] = 0 
-        heapq.heappush(heap, (0, start))
+    def count_distance(i, j, chicken_num): 
+        
+        is_visited = [ [False for _ in range(N)] for _ in range(N)]
+        queue = deque() 
+        queue.append((i, j, 0))
+        is_visited[i][j] = True 
+        dir = [[1, 0], [-1, 0], [0, 1], [0, -1]]
 
-        while heap: 
-            cur = heapq.heappop(heap) 
-            cur_village = cur[1]
-            cur_cost = cur[0]
+        while queue:
+            cur = queue.popleft()
 
-            if cur_cost > costs[cur_village]: 
-                continue
+            if graph[cur[0]][cur[1]] > 0: 
+                house = graph[cur[0]][cur[1]] - 1
+                distance[chicken_num-1][house] = cur[2]
 
-            for village, cost in enumerate(graph[cur_village]):
-                if cost != math.inf and cost + cur_cost < costs[village]: 
-                    costs[village] = cost + cur_cost
-                    heapq.heappush(heap, (cost + cur_cost, village))
+            for d in dir: 
+                nx = cur[0] + d[0] 
+                ny = cur[1] + d[1] 
+                nd = cur[2] + 1 
 
-        for dest, cost in enumerate(costs):
-            min_cost[start][dest] = cost
+                if nx >= 0 and nx < N and ny >= 0 and ny < N and not is_visited[nx][ny]:
+                    queue.append((nx, ny, nd))
+                    is_visited[nx][ny] = True
 
-    for i in range(1, village_count + 1):
-        dijkstra(i)
-    
-    result = 0
+    def find_min_sum(comb) -> int: 
+        sum = 0 
 
-    for i in range(1, village_count + 1): 
-        if i == party_location: continue
-        result = max(result, min_cost[i][party_location] + min_cost[party_location][i])
-    
+        for i in range(house_count): 
+            min_dist = math.inf 
+
+            for j in comb:
+                min_dist = min(distance[j-1][i], min_dist)
+
+            sum += min_dist
+        
+        return sum
+
+    mark_map()
+    distance = [ [0 for _ in range(house_count)] for _ in range(chicken_count)]
+
+    for i in range(N):
+        for j in range(N): 
+            if graph[i][j] < 0: 
+                count_distance(i, j, abs(graph[i][j]))
+
+    chickens = [x + 1 for x in range(chicken_count)]
+    combs = list(combinations(chickens, M))
+
+    for c in combs:
+        result = min(find_min_sum(c), result)
+
     print(result)
-solution() 
+solution()
