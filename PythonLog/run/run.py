@@ -1,37 +1,30 @@
 import sys
-import math
-from collections import deque
 
 def solution():
-    (col_size, row_size) = map(int, sys.stdin.readline().split())
+    city_count = int(sys.stdin.readline())
+    travel_target_count = int(sys.stdin.readline())
+    graph = [ list(map(int, sys.stdin.readline().split())) for _ in range(0, city_count) ] 
+    travel_plan = list(map(int, sys.stdin.readline().split()))
 
-    maze = [ list(map(int, sys.stdin.readline().strip())) for _ in range(row_size) ]
-    move = [ [math.inf for _ in range(col_size)] for _ in range(row_size)]
+    for i in range(city_count):
+        graph[i][i] = 1
 
-    queue = deque() 
-    queue.append((0, 0, 0))
-    move[0][0] = 0
-    directions = [[1, 0], [-1, 0], [0, 1], [0, -1]]
+    for k in range(city_count):
+        for i in range(city_count):
+            for j in range(city_count): 
+                if graph[i][k] == 1 and graph[k][j] == 1:
+                    graph[i][j] = 1 
 
-    while queue: 
-        (cur_x, cur_y, break_count) = queue.popleft()
+    result = "YES"
 
-        if break_count > move[cur_y][cur_x]: 
-            continue
+    for i in range(0, len(travel_plan) - 1):
+        current = travel_plan[i] - 1
+        next = travel_plan[i+1] - 1
 
-        for d in directions: 
-            nx = cur_x + d[0]
-            ny = cur_y + d[1]
-            nc = break_count
-
-            if nx >= 0 and nx < col_size and ny >= 0 and ny < row_size: 
-                if maze[ny][nx] == 1: 
-                    nc += 1
-                
-                if nc < move[ny][nx]: 
-                    queue.append((nx, ny, nc))
-                    move[ny][nx] = nc
-
-    print(move[row_size-1][col_size-1])
+        if graph[current][next] == 0:
+            result = "NO" 
+            break
+    
+    print(result)
 
 solution()
