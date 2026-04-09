@@ -1,79 +1,47 @@
 import sys
-from collections import deque
 
 def solution():
-    (r, c) = list(map(int, sys.stdin.readline().split()))
-    cheese = [ list(map(int, sys.stdin.readline().split())) for _ in range(r) ]
-    map_size = r * c
-    empty_num = 0
-    time = 0 
+    bounds = list(map(int,sys.stdin.readline().split()))
+    min_r = bounds[0]
+    min_c = bounds[1]
+    max_r = bounds[2] + 1
+    max_c = bounds[3] + 1
+    max_length = 0 
+    result = [[]]
 
-    def melt_cheese() -> int: 
-        queue = deque() 
-        is_empty_area = [ [False for _ in range(c)] for _ in range(r)]
-        is_visited = [ [False for _ in range(c)] for _ in range(r)]
+    def find_value(r, c) -> int: 
+        max_coordinate = max(abs(r), abs(c))
+        min_coordinate = max_coordinate * -1
+        length = max_coordinate * 2 + 1
+        base = max_coordinate * 2 + 1
+        start_value = base * base
 
-        dir = [[0, 1], [0, -1], [1, 0], [-1, 0]]
-        queue.append((0, 0))
-        is_empty_area[0][0] = True
-        result = 1
-        melt_target = [] 
+        if r == max_coordinate and c == max_coordinate:
+            return start_value
+        elif r == max_coordinate: 
+            diff = max_coordinate - c
+            return start_value - diff 
+        elif c == min_coordinate: 
+            value = start_value - length + 1
+            diff = max_coordinate - r
+            return value - diff 
+        elif r == min_coordinate:
+            value = start_value - (length * 2) + 2
+            diff = abs(min_coordinate - c)
+            return value - diff 
+        else:
+            value = start_value - (length * 3) + 3 
+            diff = abs(r - min_coordinate)
+            return value - diff
 
-        while queue:
-            cur = queue.popleft() 
+    for (i, r) in enumerate(range(min_r, max_r)):
+        for (j, c) in enumerate(range(min_c, max_c)):
+            value = find_value(r, c)
+            result[i].append(value)
+            max_length = max(max_length, len(str(value)))
+        result.append([])
 
-            for d in dir: 
-                nr = cur[0] + d[0] 
-                nc = cur[1] + d[1] 
-
-                if nr >= 0 and nr < r and nc >= 0 and nc < c and not is_empty_area[nr][nc]: 
-                    
-                    if cheese[nr][nc] == 0: 
-                        queue.append((nr, nc))
-                        is_empty_area[nr][nc] = True
-
-        queue.append((0, 0))
-        is_visited[0][0] = True
-
-        while queue:
-            cur = queue.popleft() 
-
-            for d in dir: 
-                nr = cur[0] + d[0] 
-                nc = cur[1] + d[1] 
-
-                if nr >= 0 and nr < r and nc >= 0 and nc < c and not is_visited[nr][nc]:
-
-                    if cheese[nr][nc] == 0:
-                        queue.append((nr, nc))
-                        is_visited[nr][nc] = True
-                        result += 1
-
-                    if cheese[nr][nc] == 1:
-                        empty_area_count = 0
-
-                        for d in dir:
-                            neighbor_r = nr + d[0]
-                            neighbor_c = nc + d[1]
-
-                            if cheese[neighbor_r][neighbor_c] == 0 and is_empty_area[neighbor_r][neighbor_c]:
-                                empty_area_count += 1
-
-                        if empty_area_count >= 2:
-                            melt_target.append((nr, nc))
-                            queue.append((nr, nc))
-                            is_visited[nr][nc] = True
-                            result += 1
-
-        for m in melt_target: 
-            cheese[m[0]][m[1]] = 0 
-
-        return result 
-         
-    while empty_num < map_size: 
-        empty_num = melt_cheese()
-        time += 1 
-
-    print(time)
+    result.pop()
+    print('\n'.join(' '.join(f"{v:>{max_length}}" for v in row) for row in result))
 
 solution()
